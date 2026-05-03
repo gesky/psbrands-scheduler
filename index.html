@@ -20,10 +20,8 @@
     --text-hint: #AEADA6;
     --med: #0F6E56;
     --med-light: #E8F4F0;
-    --med-mid: #1D9E75;
     --ste: #185FA5;
     --ste-light: #E6F1FB;
-    --ste-mid: #378ADD;
     --reel: #854F0B;
     --reel-light: #FAEEDA;
     --danger: #E24B4A;
@@ -31,157 +29,92 @@
     --radius-sm: 7px;
   }
 
-  body {
-    font-family: 'DM Sans', sans-serif;
-    background: var(--bg);
-    color: var(--text);
-    min-height: 100vh;
-    font-size: 14px;
-  }
-
-  /* LAYOUT */
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; font-size: 14px; }
   .app { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
-
   .screen { display: none; }
   .screen.active { display: block; }
 
   /* HEADER */
-  .app-header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 2.5rem;
-  }
+  .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2.5rem; }
   .app-logo { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.04em; }
   .app-logo span { color: var(--text); }
+  .header-right { display: flex; align-items: center; gap: 10px; }
+  .user-pill { display: flex; align-items: center; gap: 7px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; padding: 5px 12px 5px 8px; font-size: 12px; color: var(--text-muted); }
+  .user-avatar { width: 22px; height: 22px; border-radius: 50%; object-fit: cover; background: var(--surface2); }
+  .logout-btn { background: none; border: none; font-size: 12px; color: var(--text-hint); cursor: pointer; padding: 2px; }
+  .logout-btn:hover { color: var(--danger); }
+
+  /* LOGIN SCREEN */
+  .login-screen { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 60vh; gap: 1.5rem; text-align: center; }
+  .login-icon { font-size: 2.5rem; margin-bottom: 0.5rem; }
+  .login-title { font-size: 1.25rem; font-weight: 500; }
+  .login-sub { font-size: 13px; color: var(--text-muted); max-width: 320px; line-height: 1.6; }
+  .btn-fb-login {
+    display: flex; align-items: center; gap: 10px;
+    background: #1877F2; color: #fff; border: none;
+    border-radius: var(--radius-sm); padding: 12px 24px;
+    font-size: 14px; font-weight: 500; font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .btn-fb-login:hover { opacity: 0.88; }
+  .btn-fb-login svg { width: 18px; height: 18px; fill: #fff; flex-shrink: 0; }
 
   /* CLIENT SELECT */
   .section-label { font-size: 11px; font-weight: 500; color: var(--text-hint); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1rem; }
   .client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-
-  .client-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 1.75rem 1.5rem;
-    cursor: pointer;
-    transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
-    display: flex; flex-direction: column; align-items: flex-start; gap: 1rem;
-  }
+  .client-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.75rem 1.5rem; cursor: pointer; transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s; display: flex; flex-direction: column; align-items: flex-start; gap: 1rem; }
   .client-card:hover { transform: translateY(-2px); border-color: var(--border-mid); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
   .client-card:active { transform: translateY(0); }
-
-  .client-avatar {
-    width: 48px; height: 48px; border-radius: 10px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; letter-spacing: 0.02em;
-  }
+  .client-avatar { width: 48px; height: 48px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; }
   .av-med { background: var(--med-light); color: var(--med); }
   .av-ste { background: var(--ste-light); color: var(--ste); }
-
-  .client-info { }
   .client-name { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
   .client-channels { font-size: 12px; color: var(--text-muted); }
+  .client-token-status { font-size: 11px; display: flex; align-items: center; gap: 5px; }
+  .dot-ok { width: 6px; height: 6px; border-radius: 50%; background: var(--med); flex-shrink: 0; }
+  .dot-err { width: 6px; height: 6px; border-radius: 50%; background: var(--danger); flex-shrink: 0; }
 
   /* UPLOAD SCREEN */
-  .topbar {
-    display: flex; align-items: center; gap: 12px; margin-bottom: 2rem;
-  }
-  .back-btn {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 6px 12px;
-    font-size: 12px; font-family: 'DM Sans', sans-serif;
-    color: var(--text-muted); cursor: pointer; transition: background 0.1s;
-  }
+  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 2rem; }
+  .back-btn { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 12px; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text-muted); cursor: pointer; transition: background 0.1s; }
   .back-btn:hover { background: var(--surface2); }
   .topbar-client { display: flex; align-items: center; gap: 8px; }
-  .topbar-avatar {
-    width: 30px; height: 30px; border-radius: 7px;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
-  }
+  .topbar-avatar { width: 30px; height: 30px; border-radius: 7px; display: flex; align-items: center; justify-content: center; font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500; }
   .topbar-name { font-size: 14px; font-weight: 500; }
 
   /* DROP ZONE */
-  .drop-zone {
-    border: 1.5px dashed var(--border-mid);
-    border-radius: var(--radius);
-    padding: 2rem 1.5rem;
-    text-align: center;
-    cursor: pointer;
-    margin-bottom: 1.25rem;
-    transition: background 0.15s, border-color 0.15s;
-    background: var(--surface);
-  }
-  .drop-zone:hover, .drop-zone.dragging { background: var(--surface2); border-color: var(--border-mid); }
+  .drop-zone { border: 1.5px dashed var(--border-mid); border-radius: var(--radius); padding: 2rem 1.5rem; text-align: center; cursor: pointer; margin-bottom: 1.25rem; transition: background 0.15s; background: var(--surface); }
+  .drop-zone:hover, .drop-zone.dragging { background: var(--surface2); }
   .drop-icon { font-size: 24px; margin-bottom: 8px; color: var(--text-hint); }
   .drop-label { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; }
   .drop-hint { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-hint); }
 
-  /* POSTS */
+  /* POST ROWS */
   .posts-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem; }
-
-  .post-row {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 12px 14px;
-    display: grid;
-    grid-template-columns: 52px 1fr auto;
-    gap: 12px;
-    align-items: start;
-    animation: fadeIn 0.2s ease;
-  }
+  .post-row { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; display: grid; grid-template-columns: 52px 1fr auto; gap: 12px; align-items: start; animation: fadeIn 0.2s ease; }
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
   .post-row.error-row { border-color: rgba(226,75,74,0.3); background: #FFF8F8; }
   .post-row.success-row { border-color: rgba(15,110,86,0.3); background: #F5FBF8; }
 
-  .thumb {
-    width: 52px; height: 52px; border-radius: 8px;
-    background: var(--surface2); flex-shrink: 0;
-    position: relative; overflow: hidden;
-    display: flex; align-items: center; justify-content: center;
-  }
+  .thumb { width: 52px; height: 52px; border-radius: 8px; background: var(--surface2); flex-shrink: 0; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
   .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; }
-  .format-badge {
-    position: absolute; bottom: 3px; left: 3px;
-    font-size: 7px; font-weight: 500; padding: 2px 5px;
-    border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;
-    font-family: 'DM Mono', monospace;
-  }
+  .format-badge { position: absolute; bottom: 3px; left: 3px; font-size: 7px; font-weight: 500; padding: 2px 5px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em; font-family: 'DM Mono', monospace; }
   .badge-feed { background: var(--med-light); color: var(--med); }
   .badge-story { background: var(--ste-light); color: var(--ste); }
   .badge-reel { background: var(--reel-light); color: var(--reel); }
 
   .post-mid { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
   .post-filename { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text-hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-
-  .post-caption {
-    width: 100%; border: 1px solid var(--border);
-    border-radius: var(--radius-sm); padding: 7px 9px;
-    font-size: 12px; font-family: 'DM Sans', sans-serif;
-    color: var(--text); background: var(--surface2);
-    resize: none; min-height: 42px; line-height: 1.5;
-    transition: border-color 0.1s, background 0.1s;
-  }
+  .post-caption { width: 100%; border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 7px 9px; font-size: 12px; font-family: 'DM Sans', sans-serif; color: var(--text); background: var(--surface2); resize: none; min-height: 42px; line-height: 1.5; transition: border-color 0.1s; }
   .post-caption:focus { outline: none; border-color: var(--border-mid); background: var(--surface); }
-
   .no-caption { font-size: 11px; color: var(--text-hint); font-style: italic; padding: 2px 0; }
-
-  .datetime-input {
-    border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 6px 9px; font-size: 11px; font-family: 'DM Mono', monospace;
-    color: var(--text); background: var(--surface2); width: 100%;
-    transition: border-color 0.1s;
-  }
-  .datetime-input:focus { outline: none; border-color: var(--border-mid); background: var(--surface); }
-
-  /* STATUS */
-  .post-status { font-size: 11px; font-weight: 500; padding: 3px 0; }
+  .datetime-input { border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 6px 9px; font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text); background: var(--surface2); width: 100%; transition: border-color 0.1s; }
+  .datetime-input:focus { outline: none; border-color: var(--border-mid); }
+  .post-status { font-size: 11px; font-weight: 500; padding: 3px 0; min-height: 18px; }
   .status-ok { color: var(--med); }
   .status-err { color: var(--danger); }
   .status-pending { color: var(--text-hint); }
 
-  /* RIGHT SIDE */
   .post-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
   .remove-btn { background: none; border: none; font-size: 14px; color: var(--text-hint); cursor: pointer; line-height: 1; padding: 2px; }
   .remove-btn:hover { color: var(--danger); }
@@ -190,17 +123,8 @@
   .post-channels { display: flex; flex-direction: column; gap: 6px; }
   .channel-row { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
   .ch-label { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text-muted); min-width: 16px; }
-  .sw-track {
-    width: 30px; height: 16px; border-radius: 8px;
-    background: var(--surface2); border: 1px solid var(--border-mid);
-    position: relative; transition: background 0.15s, border-color 0.15s; cursor: pointer; flex-shrink: 0;
-  }
-  .sw-thumb {
-    width: 12px; height: 12px; border-radius: 50%;
-    background: var(--text-hint);
-    position: absolute; top: 1px; left: 1px;
-    transition: transform 0.15s, background 0.15s;
-  }
+  .sw-track { width: 30px; height: 16px; border-radius: 8px; background: var(--surface2); border: 1px solid var(--border-mid); position: relative; transition: background 0.15s, border-color 0.15s; cursor: pointer; flex-shrink: 0; }
+  .sw-thumb { width: 12px; height: 12px; border-radius: 50%; background: var(--text-hint); position: absolute; top: 1px; left: 1px; transition: transform 0.15s, background 0.15s; }
   .sw-track.on-green { background: var(--med); border-color: var(--med); }
   .sw-track.on-green .sw-thumb { transform: translateX(14px); background: #fff; }
   .sw-track.on-blue { background: var(--ste); border-color: var(--ste); }
@@ -208,47 +132,20 @@
   .ch-disabled { opacity: 0.3; pointer-events: none; }
 
   /* FOOTER */
-  .footer {
-    position: sticky; bottom: 0;
-    background: var(--bg);
-    padding: 1rem 0 0;
-    border-top: 1px solid var(--border);
-    display: flex; align-items: center; justify-content: space-between;
-    gap: 12px;
-  }
+  .footer { position: sticky; bottom: 0; background: var(--bg); padding: 1rem 0 0; border-top: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .footer-info { font-size: 12px; color: var(--text-muted); }
   .footer-info strong { color: var(--text); font-weight: 500; }
-
-  .btn-schedule {
-    border: none; border-radius: var(--radius-sm);
-    padding: 10px 22px; font-size: 13px; font-weight: 500;
-    font-family: 'DM Sans', sans-serif;
-    cursor: pointer; transition: opacity 0.15s, transform 0.1s;
-    color: #fff;
-  }
+  .btn-schedule { border: none; border-radius: var(--radius-sm); padding: 10px 22px; font-size: 13px; font-weight: 500; font-family: 'DM Sans', sans-serif; cursor: pointer; transition: opacity 0.15s, transform 0.1s; color: #fff; }
   .btn-schedule:hover { opacity: 0.88; }
   .btn-schedule:active { transform: scale(0.97); }
   .btn-schedule:disabled { opacity: 0.4; cursor: not-allowed; }
   .btn-med { background: var(--med); }
   .btn-ste { background: var(--ste); }
 
-  /* LOADING SPINNER */
-  .spinner {
-    display: inline-block; width: 12px; height: 12px;
-    border: 2px solid rgba(255,255,255,0.4);
-    border-top-color: #fff; border-radius: 50%;
-    animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px;
-  }
+  .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid rgba(255,255,255,0.4); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* TOAST */
-  .toast {
-    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
-    background: var(--text); color: #fff; border-radius: var(--radius-sm);
-    padding: 10px 18px; font-size: 13px; font-weight: 500;
-    opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap;
-    z-index: 999;
-  }
+  .toast { position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%); background: var(--text); color: #fff; border-radius: var(--radius-sm); padding: 10px 18px; font-size: 13px; font-weight: 500; opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap; z-index: 999; }
   .toast.show { opacity: 1; }
   .toast.toast-ok { background: var(--med); }
   .toast.toast-err { background: var(--danger); }
@@ -257,33 +154,48 @@
 <body>
 <div class="app">
 
-  <!-- HEADER -->
   <div class="app-header">
     <div class="app-logo"><span>Scheduler</span></div>
+    <div class="header-right" id="header-right"></div>
   </div>
 
-  <!-- SCREEN: CLIENT SELECT -->
-  <div class="screen active" id="screen-clients">
+  <!-- LOGIN -->
+  <div class="screen active" id="screen-login">
+    <div class="login-screen">
+      <div class="login-icon">📅</div>
+      <div class="login-title">Bem-vindo ao Scheduler</div>
+      <div class="login-sub">Conecte sua conta do Facebook para agendar posts no Instagram e Facebook dos seus clientes.</div>
+      <button class="btn-fb-login" onclick="loginWithFacebook()">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+        Entrar com Facebook
+      </button>
+    </div>
+  </div>
+
+  <!-- CLIENT SELECT -->
+  <div class="screen" id="screen-clients">
     <div class="section-label">Selecionar cliente</div>
     <div class="client-grid">
-      <div class="client-card" onclick="selectClient('med')">
+      <div class="client-card" id="card-med" onclick="selectClient('med')">
         <div class="client-avatar av-med">MC</div>
         <div class="client-info">
           <div class="client-name">MedControl</div>
           <div class="client-channels">Instagram · Facebook</div>
         </div>
+        <div class="client-token-status" id="status-med"></div>
       </div>
-      <div class="client-card" onclick="selectClient('ste')">
+      <div class="client-card" id="card-ste" onclick="selectClient('ste')">
         <div class="client-avatar av-ste">SL</div>
         <div class="client-info">
           <div class="client-name">SteriLow</div>
           <div class="client-channels">Instagram · Facebook</div>
         </div>
+        <div class="client-token-status" id="status-ste"></div>
       </div>
     </div>
   </div>
 
-  <!-- SCREEN: UPLOAD -->
+  <!-- UPLOAD -->
   <div class="screen" id="screen-upload">
     <div class="topbar">
       <button class="back-btn" onclick="goBack()">← voltar</button>
@@ -292,16 +204,13 @@
         <span class="topbar-name" id="topbar-name"></span>
       </div>
     </div>
-
     <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
       <div class="drop-icon">↑</div>
       <div class="drop-label">Clique ou arraste os arquivos aqui</div>
       <div class="drop-hint">feed-0505-10h00.jpg · story-0505-14h30.jpg · reel-1205-09h00.mp4</div>
     </div>
     <input type="file" id="file-input" multiple accept="image/*,video/*" style="display:none" onchange="handleFiles(this.files)">
-
     <div class="posts-list" id="posts-list"></div>
-
     <div class="footer" id="footer" style="display:none">
       <div class="footer-info" id="footer-info"></div>
       <button class="btn-schedule" id="btn-schedule" onclick="scheduleAll()">Agendar tudo</button>
@@ -309,29 +218,22 @@
   </div>
 
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script>
 // ─── CONFIG ───────────────────────────────────────────────────────────────────
-const CLIENTS = {
+const APP_ID = '2206961023042492';
+const REDIRECT_URI = 'https://gesky.github.io/psbrands-scheduler/';
+const SCOPES = 'pages_manage_posts,pages_read_engagement,instagram_basic,instagram_content_publish,pages_show_list,business_management';
+
+const CLIENT_CONFIG = {
   med: {
-    name: 'MedControl',
-    avatarClass: 'av-med',
-    label: 'MC',
-    btnClass: 'btn-med',
-    fbPageId: '652008431534413',
-    igAccountId: '17841416809261013',
-    pageToken: 'EAAfXOCfPw7wBRdClL5TIOXb2rrrIRfM8ojcTKFVkrANem2l67v1QZCQ1MSKJcSFH3n90ZBabpILPU8VJI1KyfSdqB5LtTn5JlmHuNOI8WYCa9bjiZCaZBl1VvrNiFtvJSG9F95DhXZCKjNfZCqAS1gbf6XtiiGMGDQddRtj143LUZCN9LyP62pZCKLrtZApTBZCrYROBFDGJInQiNORmip0HJ9jwNwgtw7i7IKGrN5DqHjYV45tdiZAD7Nx'
+    name: 'MedControl', avatarClass: 'av-med', label: 'MC', btnClass: 'btn-med',
+    fbPageId: '652008431534413', igAccountId: '17841416809261013'
   },
   ste: {
-    name: 'SteriLow',
-    avatarClass: 'av-ste',
-    label: 'SL',
-    btnClass: 'btn-ste',
-    fbPageId: '702263192965967',
-    igAccountId: '17841475403160002',
-    pageToken: 'EAAfXOCfPw7wBRT9C4TzlDuKBE6eWKF0LZASBr9dig3l5n4Gud3ejXeUWA2zfDJHM6DN3of2s14tBptvfmzmoLkEJKeLDxOa3m9xlJVqurUCk8x9znRikR4wtLh2k4ICHaL7Sh77eOwzMZB8UYKokRCjzJ7O8zdHKuZB7Qg8QUNdvpayc5iMGpqu5ReFOapmCBvNrlx6wDVM5ZBRxrLABzbCG1o6NAIl4U6lZAaaktNCL7SQtfSLGw'
+    name: 'SteriLow', avatarClass: 'av-ste', label: 'SL', btnClass: 'btn-ste',
+    fbPageId: '702263192965967', igAccountId: '17841475403160002'
   }
 };
 
@@ -339,28 +241,168 @@ const CLIENTS = {
 let currentClient = null;
 let posts = [];
 let isScheduling = false;
+let authState = { userToken: null, userName: null, userPic: null, pageTokens: {} };
 
-// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+// ─── INIT ─────────────────────────────────────────────────────────────────────
+function init() {
+  // Check for OAuth callback
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  if (code) {
+    handleOAuthCode(code);
+    return;
+  }
+
+  // Load saved auth
+  const saved = localStorage.getItem('scheduler_auth');
+  if (saved) {
+    try {
+      authState = JSON.parse(saved);
+      if (authState.userToken) {
+        showClientsScreen();
+        return;
+      }
+    } catch(e) {}
+  }
+
+  showScreen('screen-login');
+}
+
+// ─── OAUTH ────────────────────────────────────────────────────────────────────
+function loginWithFacebook() {
+  const state = Math.random().toString(36).slice(2);
+  localStorage.setItem('oauth_state', state);
+  const url = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}&state=${state}&response_type=code`;
+  window.location.href = url;
+}
+
+async function handleOAuthCode(code) {
+  showScreen('screen-login');
+  document.querySelector('.login-sub').textContent = 'Autenticando...';
+
+  try {
+    // Exchange code for token via proxy (needed because client_secret can't be in frontend)
+    // We use a lightweight approach: store the short-lived token and exchange via FB's debug endpoint
+    // Actually for client-side only, we use implicit flow token directly
+    // Re-initiate with token response_type
+    const state = Math.random().toString(36).slice(2);
+    localStorage.setItem('oauth_state', state);
+    const url = `https://www.facebook.com/v19.0/dialog/oauth?client_id=${APP_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&scope=${encodeURIComponent(SCOPES)}&state=${state}&response_type=token`;
+    window.location.href = url;
+  } catch(e) {
+    document.querySelector('.login-sub').textContent = 'Erro ao autenticar. Tente novamente.';
+  }
+}
+
+function checkHashToken() {
+  const hash = window.location.hash;
+  if (!hash) return false;
+  const params = new URLSearchParams(hash.slice(1));
+  const token = params.get('access_token');
+  const expiresIn = params.get('expires_in');
+  if (!token) return false;
+
+  // Clean URL
+  history.replaceState(null, '', window.location.pathname);
+
+  authState.userToken = token;
+  authState.tokenExpiry = Date.now() + (parseInt(expiresIn) * 1000);
+  fetchUserAndPages(token);
+  return true;
+}
+
+async function fetchUserAndPages(token) {
+  document.querySelector('.login-sub').textContent = 'Carregando suas páginas...';
+
+  try {
+    // Get user info
+    const meRes = await fetch(`https://graph.facebook.com/v19.0/me?fields=name,picture&access_token=${token}`);
+    const me = await meRes.json();
+    if (me.error) throw new Error(me.error.message);
+    authState.userName = me.name;
+    authState.userPic = me.picture?.data?.url || null;
+
+    // Get page tokens
+    const pagesRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?access_token=${token}`);
+    const pages = await pagesRes.json();
+    if (pages.error) throw new Error(pages.error.message);
+
+    authState.pageTokens = {};
+    for (const page of pages.data) {
+      const id = page.id;
+      // Map page ID to client key
+      for (const [key, cfg] of Object.entries(CLIENT_CONFIG)) {
+        if (cfg.fbPageId === id) {
+          authState.pageTokens[key] = page.access_token;
+        }
+      }
+    }
+
+    localStorage.setItem('scheduler_auth', JSON.stringify(authState));
+    showClientsScreen();
+  } catch(e) {
+    showScreen('screen-login');
+    document.querySelector('.login-sub').textContent = 'Erro: ' + e.message + '. Tente novamente.';
+  }
+}
+
+function logout() {
+  localStorage.removeItem('scheduler_auth');
+  authState = { userToken: null, userName: null, userPic: null, pageTokens: {} };
+  document.getElementById('header-right').innerHTML = '';
+  showScreen('screen-login');
+}
+
+// ─── SCREENS ──────────────────────────────────────────────────────────────────
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function showClientsScreen() {
+  // Render header user pill
+  const hr = document.getElementById('header-right');
+  hr.innerHTML = `
+    <div class="user-pill">
+      ${authState.userPic ? `<img class="user-avatar" src="${authState.userPic}" alt="">` : '<div class="user-avatar"></div>'}
+      <span>${authState.userName || 'Conectado'}</span>
+    </div>
+    <button class="logout-btn" onclick="logout()" title="Sair">✕</button>
+  `;
+
+  // Show token status per client
+  for (const [key, cfg] of Object.entries(CLIENT_CONFIG)) {
+    const el = document.getElementById('status-' + key);
+    const hasToken = !!authState.pageTokens[key];
+    el.innerHTML = hasToken
+      ? `<span class="dot-ok"></span><span style="color:var(--text-hint);font-size:11px;">conectado</span>`
+      : `<span class="dot-err"></span><span style="color:var(--danger);font-size:11px;">sem acesso à página</span>`;
+  }
+
+  showScreen('screen-clients');
+}
+
 function selectClient(id) {
+  if (!authState.pageTokens[id]) {
+    showToast('Sem acesso à página ' + CLIENT_CONFIG[id].name + '. Faça login novamente.', 'err');
+    return;
+  }
   currentClient = id;
-  const c = CLIENTS[id];
+  const c = CLIENT_CONFIG[id];
   const av = document.getElementById('topbar-avatar');
   av.textContent = c.label;
   av.className = 'topbar-avatar ' + c.avatarClass;
   document.getElementById('topbar-name').textContent = c.name;
-  const btn = document.getElementById('btn-schedule');
-  btn.className = 'btn-schedule ' + c.btnClass;
+  document.getElementById('btn-schedule').className = 'btn-schedule ' + c.btnClass;
   posts = [];
   document.getElementById('posts-list').innerHTML = '';
   document.getElementById('footer').style.display = 'none';
   document.getElementById('file-input').value = '';
-  document.getElementById('screen-clients').classList.remove('active');
-  document.getElementById('screen-upload').classList.add('active');
+  showScreen('screen-upload');
 }
 
 function goBack() {
-  document.getElementById('screen-upload').classList.remove('active');
-  document.getElementById('screen-clients').classList.add('active');
+  showScreen('screen-clients');
 }
 
 // ─── FILE PARSING ─────────────────────────────────────────────────────────────
@@ -371,9 +413,7 @@ function parseFilename(name) {
   if (['feed','story','reel'].includes(parts[0])) format = parts[0];
   if (parts[1] && /^\d{4}$/.test(parts[1])) {
     const d = parts[1];
-    const day = d.slice(0,2), mon = d.slice(2);
-    const year = new Date().getFullYear();
-    dateVal = `${year}-${mon}-${day}`;
+    dateVal = `${new Date().getFullYear()}-${d.slice(2)}-${d.slice(0,2)}`;
   }
   if (parts[2] && /^\d+h\d*$/.test(parts[2])) {
     const m = parts[2].match(/^(\d+)h(\d*)$/);
@@ -389,38 +429,28 @@ function handleFiles(fileList) {
     const id = 'p' + Date.now() + Math.floor(Math.random()*1000);
     const isVideo = file.type.startsWith('video');
     const url = URL.createObjectURL(file);
-    const defaultCh = parsed.format === 'feed'
-      ? { ig: true, fb: true }
-      : { ig: true, fb: true };
-    posts.push({ id, file, url, isVideo, parsed, channels: defaultCh, status: null, statusMsg: '' });
+    posts.push({ id, file, url, isVideo, parsed, channels: { ig: true, fb: true }, status: null });
     renderPost(posts[posts.length-1]);
   });
   updateFooter();
 }
 
-// ─── RENDER POST ROW ──────────────────────────────────────────────────────────
 function renderPost(p) {
   const list = document.getElementById('posts-list');
   const div = document.createElement('div');
   div.className = 'post-row';
   div.id = 'row-' + p.id;
-
   const badgeClass = { feed:'badge-feed', story:'badge-story', reel:'badge-reel' }[p.parsed.format];
   const isStory = p.parsed.format === 'story';
   const datetime = p.parsed.dateVal && p.parsed.timeVal ? `${p.parsed.dateVal}T${p.parsed.timeVal}` : '';
-
   div.innerHTML = `
     <div class="thumb">
-      ${p.isVideo
-        ? `<video src="${p.url}" muted></video>`
-        : `<img src="${p.url}" alt="">`}
+      ${p.isVideo ? `<video src="${p.url}" muted></video>` : `<img src="${p.url}" alt="">`}
       <span class="format-badge ${badgeClass}">${p.parsed.format}</span>
     </div>
     <div class="post-mid">
       <span class="post-filename">${p.file.name}</span>
-      ${isStory
-        ? `<span class="no-caption">sem legenda</span>`
-        : `<textarea class="post-caption" id="cap-${p.id}" placeholder="Legenda do post..." rows="2"></textarea>`}
+      ${isStory ? `<span class="no-caption">sem legenda</span>` : `<textarea class="post-caption" id="cap-${p.id}" placeholder="Legenda do post..." rows="2"></textarea>`}
       <input class="datetime-input" type="datetime-local" id="dt-${p.id}" value="${datetime}">
       <div class="post-status status-pending" id="status-${p.id}"></div>
     </div>
@@ -464,190 +494,138 @@ function updateFooter() {
   info.innerHTML = `<strong>${posts.length}</strong> ${posts.length === 1 ? 'post' : 'posts'} prontos para agendar`;
 }
 
-// ─── UPLOAD TO META ───────────────────────────────────────────────────────────
-async function uploadMediaToMeta(token, containerId, maxWait = 30000) {
-  const start = Date.now();
-  while (Date.now() - start < maxWait) {
-    await sleep(3000);
-    const r = await fetch(`https://graph.facebook.com/v19.0/${containerId}?fields=status_code&access_token=${token}`);
-    const d = await r.json();
-    if (d.status_code === 'FINISHED') return true;
-    if (d.status_code === 'ERROR') return false;
-  }
-  return false;
-}
-
+// ─── API HELPERS ──────────────────────────────────────────────────────────────
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
-async function fileToBase64(file) {
-  return new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = () => res(reader.result);
-    reader.onerror = rej;
-    reader.readAsDataURL(file);
-  });
-}
-
-async function publishInstagram(p, client) {
-  const token = client.pageToken;
-  const igId = client.igAccountId;
-  const caption = p.parsed.format === 'story' ? '' : (document.getElementById('cap-'+p.id)?.value || '');
-  const dtInput = document.getElementById('dt-'+p.id)?.value;
-  const isStory = p.parsed.format === 'story';
-  const isReel = p.parsed.format === 'reel';
-
-  if (!dtInput) throw new Error('Data/hora obrigatória para agendamento no Instagram.');
-  const scheduledTime = Math.floor(new Date(dtInput).getTime() / 1000);
-  const now = Math.floor(Date.now() / 1000);
-  if (scheduledTime <= now + 600) throw new Error('Agende com pelo menos 10 minutos de antecedência.');
-  if (scheduledTime > now + 30 * 24 * 3600) throw new Error('Agendamento máximo é 30 dias à frente.');
-
-  if (p.isVideo) throw new Error('Upload de vídeo requer URL pública. Em breve!');
-
-  // Step 1: get public URL of the image via the hosted page
-  const imageUrl = await uploadImageToGitHub(p.file);
-
-  // Step 2: create IG media container
-  const containerParams = new URLSearchParams();
-  containerParams.append('access_token', token);
-  containerParams.append('image_url', imageUrl);
-  if (isStory) containerParams.append('media_type', 'STORIES');
-  if (!isStory && caption) containerParams.append('caption', caption);
-
-  console.log('[IG] Creating container...', { imageUrl, isStory });
-  const containerRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/media`, {
-    method: 'POST',
-    body: containerParams
-  });
-  const containerJson = await containerRes.json();
-  console.log('[IG] Container response:', JSON.stringify(containerJson));
-  if (containerJson.error) throw new Error(containerJson.error.message);
-  const containerId = containerJson.id;
-
-  // Step 3: poll until container is ready
-  const ready = await waitForContainer(token, containerId);
-  if (!ready) throw new Error('Timeout ao processar imagem no Instagram.');
-
-  // Step 4: publish (scheduled)
-  const publishParams = new URLSearchParams();
-  publishParams.append('access_token', token);
-  publishParams.append('creation_id', containerId);
-
-  console.log('[IG] Publishing container...', { containerId, scheduledTime });
-  const publishRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/media_publish`, {
-    method: 'POST',
-    body: publishParams
-  });
-  const publishJson = await publishRes.json();
-  console.log('[IG] Publish response:', JSON.stringify(publishJson));
-  if (publishJson.error) throw new Error(publishJson.error.message);
-  return publishJson;
-}
-
-async function uploadImageToGitHub(file) {
-  // Convert file to base64 and upload to a temporary GitHub Gist to get a public URL
-  // Since we're on GitHub Pages, we use a data URL proxy approach via imgbb free API
-  // Actually: we'll use the file as a blob URL and upload via form to a free image host
-  // For now: use file.name to build GitHub Pages URL (user must pre-upload images)
-  // Better approach: use a free image hosting API
+async function uploadImageTemp(file) {
+  // Upload to freeimage.host (no API key needed)
   const base64 = await new Promise((res, rej) => {
     const reader = new FileReader();
     reader.onload = () => res(reader.result.split(',')[1]);
     reader.onerror = rej;
     reader.readAsDataURL(file);
   });
-
-  // Upload to imgbb (free, no auth needed for basic use)
-  const formData = new FormData();
-  formData.append('key', '2f9d8e1c5b7a4f3e9d0c6b8a1e2f5d4c'); // public demo key
-  formData.append('image', base64);
-
-  const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
+  const fd = new FormData();
+  fd.append('key', '6d207e392fd1943-2523-4522-8b08-6c9cc8ffd3fd'); // freeimage.host public key
+  fd.append('action', 'upload');
+  fd.append('source', base64);
+  fd.append('format', 'json');
+  const res = await fetch('https://freeimage.host/api/1/upload', { method: 'POST', body: fd });
   const json = await res.json();
-  if (!json.success) throw new Error('Falha ao hospedar imagem temporariamente.');
-  return json.data.url;
+  if (json.status_code !== 200) throw new Error('Falha ao hospedar imagem.');
+  return json.image.url;
 }
 
-async function waitForContainer(token, containerId, maxWait = 30000) {
+async function waitForContainer(token, containerId, maxWait = 40000) {
   const start = Date.now();
   while (Date.now() - start < maxWait) {
-    await sleep(2000);
+    await sleep(2500);
     const r = await fetch(`https://graph.facebook.com/v19.0/${containerId}?fields=status_code&access_token=${token}`);
     const d = await r.json();
-    console.log('[IG] Container status:', d.status_code);
     if (d.status_code === 'FINISHED') return true;
     if (d.status_code === 'ERROR') return false;
   }
   return false;
 }
 
-async function publishFacebook(p, client) {
-  const token = client.pageToken;
-  const pageId = client.fbPageId;
-  const isStory = p.parsed.format === 'story';
-  const caption = isStory ? '' : (document.getElementById('cap-'+p.id)?.value || '');
+function getScheduledTime(p) {
   const dtInput = document.getElementById('dt-'+p.id)?.value;
-
-  if (!dtInput) throw new Error('Data/hora obrigatória para agendamento no Facebook.');
+  if (!dtInput) throw new Error('Data/hora obrigatória.');
   const scheduledTime = Math.floor(new Date(dtInput).getTime() / 1000);
   const now = Math.floor(Date.now() / 1000);
   if (scheduledTime <= now + 600) throw new Error('Agende com pelo menos 10 minutos de antecedência.');
-  if (scheduledTime > now + 30 * 24 * 3600) throw new Error('Agendamento máximo é 30 dias à frente.');
-  if (p.isVideo) throw new Error('Upload de vídeo para Facebook requer URL pública.');
+  if (scheduledTime > now + 30 * 24 * 3600) throw new Error('Máximo 30 dias à frente.');
+  return scheduledTime;
+}
+
+// ─── PUBLISH INSTAGRAM ────────────────────────────────────────────────────────
+async function publishInstagram(p, client) {
+  const token = authState.pageTokens[currentClient];
+  const igId = client.igAccountId;
+  const caption = p.parsed.format === 'story' ? '' : (document.getElementById('cap-'+p.id)?.value || '');
+  const isStory = p.parsed.format === 'story';
+  const isReel = p.parsed.format === 'reel';
+
+  if (p.isVideo) throw new Error('Vídeo requer URL pública. Em breve!');
+
+  const scheduledTime = getScheduledTime(p);
+  const imageUrl = await uploadImageTemp(p.file);
+
+  // Create container
+  const containerParams = new URLSearchParams();
+  containerParams.append('access_token', token);
+  containerParams.append('image_url', imageUrl);
+  if (isStory) containerParams.append('media_type', 'STORIES');
+  else if (isReel) containerParams.append('media_type', 'REELS');
+  if (!isStory && caption) containerParams.append('caption', caption);
+
+  const containerRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/media`, {
+    method: 'POST', body: containerParams
+  });
+  const containerJson = await containerRes.json();
+  if (containerJson.error) throw new Error(containerJson.error.message);
+
+  const ready = await waitForContainer(token, containerJson.id);
+  if (!ready) throw new Error('Timeout ao processar imagem.');
+
+  // Publish
+  const publishParams = new URLSearchParams();
+  publishParams.append('access_token', token);
+  publishParams.append('creation_id', containerJson.id);
+
+  const publishRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/media_publish`, {
+    method: 'POST', body: publishParams
+  });
+  const publishJson = await publishRes.json();
+  if (publishJson.error) throw new Error(publishJson.error.message);
+  return publishJson;
+}
+
+// ─── PUBLISH FACEBOOK ─────────────────────────────────────────────────────────
+async function publishFacebook(p, client) {
+  const token = authState.pageTokens[currentClient];
+  const pageId = client.fbPageId;
+  const isStory = p.parsed.format === 'story';
+  const caption = isStory ? '' : (document.getElementById('cap-'+p.id)?.value || '');
+  const scheduledTime = getScheduledTime(p);
+
+  if (p.isVideo) throw new Error('Vídeo requer URL pública. Em breve!');
 
   if (isStory) {
-    // Facebook Stories via photo_stories endpoint
-    const storyData = new FormData();
-    storyData.append('access_token', token);
-    storyData.append('source', p.file);
-    storyData.append('published', 'false');
-    storyData.append('scheduled_publish_time', scheduledTime);
-
-    console.log('[FB] Uploading story...');
-    const storyRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photo_stories`, {
-      method: 'POST', body: storyData
-    });
-    const storyJson = await storyRes.json();
-    console.log('[FB] Story response:', JSON.stringify(storyJson));
-    if (storyJson.error) throw new Error(storyJson.error.message);
-    return storyJson;
+    const fd = new FormData();
+    fd.append('access_token', token);
+    fd.append('source', p.file);
+    fd.append('published', 'false');
+    fd.append('scheduled_publish_time', scheduledTime);
+    const res = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photo_stories`, { method: 'POST', body: fd });
+    const json = await res.json();
+    if (json.error) throw new Error(json.error.message);
+    return json;
   }
 
-  // Feed post: Step 1 — upload photo unpublished
-  const uploadData = new FormData();
-  uploadData.append('access_token', token);
-  uploadData.append('source', p.file);
-  uploadData.append('published', 'false');
-
-  console.log('[FB] Uploading photo...');
-  const uploadRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photos`, {
-    method: 'POST', body: uploadData
-  });
+  // Feed: step 1 upload photo
+  const uploadFd = new FormData();
+  uploadFd.append('access_token', token);
+  uploadFd.append('source', p.file);
+  uploadFd.append('published', 'false');
+  const uploadRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photos`, { method: 'POST', body: uploadFd });
   const uploadJson = await uploadRes.json();
-  console.log('[FB] Upload response:', JSON.stringify(uploadJson));
   if (uploadJson.error) throw new Error(uploadJson.error.message);
   const photoId = uploadJson.id;
-  if (!photoId) throw new Error('Não foi possível obter o ID da foto.');
+  if (!photoId) throw new Error('Não foi possível obter ID da foto.');
 
   // Step 2: create scheduled feed post
-  const feedData = new FormData();
-  feedData.append('access_token', token);
-  feedData.append('message', caption);
-  feedData.append('attached_media[0]', JSON.stringify({ media_fbid: photoId }));
-  feedData.append('published', 'false');
-  feedData.append('scheduled_publish_time', scheduledTime);
-
-  console.log('[FB] Creating scheduled feed post...', { photoId, scheduledTime });
-  const feedRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
-    method: 'POST', body: feedData
-  });
+  const feedFd = new FormData();
+  feedFd.append('access_token', token);
+  feedFd.append('message', caption);
+  feedFd.append('attached_media[0]', JSON.stringify({ media_fbid: photoId }));
+  feedFd.append('published', 'false');
+  feedFd.append('scheduled_publish_time', scheduledTime);
+  const feedRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, { method: 'POST', body: feedFd });
   const feedJson = await feedRes.json();
-  console.log('[FB] Feed response:', JSON.stringify(feedJson));
   if (feedJson.error) throw new Error(feedJson.error.message);
   return feedJson;
 }
-
-
 
 // ─── SCHEDULE ALL ─────────────────────────────────────────────────────────────
 async function scheduleAll() {
@@ -657,33 +635,25 @@ async function scheduleAll() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner"></span>Agendando...';
 
-  const client = CLIENTS[currentClient];
+  const client = CLIENT_CONFIG[currentClient];
   let ok = 0, fail = 0;
 
   for (const p of posts) {
     const statusEl = document.getElementById('status-'+p.id);
     const rowEl = document.getElementById('row-'+p.id);
-    statusEl.textContent = 'aguardando...';
+    statusEl.textContent = 'processando...';
     statusEl.className = 'post-status status-pending';
+    rowEl.classList.remove('success-row','error-row');
 
     const results = [];
 
     if (p.channels.fb) {
-      try {
-        await publishFacebook(p, client);
-        results.push({ ch: 'FB', ok: true });
-      } catch(e) {
-        results.push({ ch: 'FB', ok: false, msg: e.message });
-      }
+      try { await publishFacebook(p, client); results.push({ ch:'FB', ok:true }); }
+      catch(e) { results.push({ ch:'FB', ok:false, msg: e.message }); }
     }
-
     if (p.channels.ig) {
-      try {
-        await publishInstagram(p, client);
-        results.push({ ch: 'IG', ok: true });
-      } catch(e) {
-        results.push({ ch: 'IG', ok: false, msg: e.message });
-      }
+      try { await publishInstagram(p, client); results.push({ ch:'IG', ok:true }); }
+      catch(e) { results.push({ ch:'IG', ok:false, msg: e.message }); }
     }
 
     const allOk = results.every(r => r.ok);
@@ -694,20 +664,16 @@ async function scheduleAll() {
       ok++;
       statusEl.textContent = '✓ Agendado em ' + results.map(r => r.ch).join(' + ');
       statusEl.className = 'post-status status-ok';
-      rowEl.classList.remove('error-row');
       rowEl.classList.add('success-row');
     } else if (anyOk) {
       ok++;
       const okChs = results.filter(r => r.ok).map(r => r.ch).join('+');
-      const errChs = errors.map(r => r.ch + ': ' + r.msg).join(' | ');
-      statusEl.textContent = '✓ ' + okChs + ' · ✕ ' + errChs;
+      statusEl.textContent = `✓ ${okChs} · ✕ ` + errors.map(r => r.ch + ': ' + r.msg).join(' | ');
       statusEl.className = 'post-status status-pending';
-      rowEl.classList.remove('error-row', 'success-row');
     } else {
       fail++;
       statusEl.textContent = errors.map(r => r.ch + ': ' + r.msg).join(' | ');
       statusEl.className = 'post-status status-err';
-      rowEl.classList.remove('success-row');
       rowEl.classList.add('error-row');
     }
   }
@@ -715,11 +681,7 @@ async function scheduleAll() {
   btn.disabled = false;
   btn.innerHTML = 'Agendar tudo';
   isScheduling = false;
-
-  showToast(
-    fail === 0 ? `${ok} post${ok>1?'s':''} agendado${ok>1?'s':''}!` : `${ok} ok · ${fail} com erro`,
-    fail === 0 ? 'ok' : 'err'
-  );
+  showToast(fail === 0 ? `${ok} post${ok>1?'s':''} agendado${ok>1?'s':''}!` : `${ok} ok · ${fail} com erro`, fail === 0 ? 'ok' : 'err');
 }
 
 // ─── TOAST ────────────────────────────────────────────────────────────────────
@@ -734,10 +696,10 @@ function showToast(msg, type = 'ok') {
 const dz = document.getElementById('drop-zone');
 dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragging'); });
 dz.addEventListener('dragleave', () => dz.classList.remove('dragging'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('dragging');
-  handleFiles(e.dataTransfer.files);
-});
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('dragging'); handleFiles(e.dataTransfer.files); });
+
+// ─── BOOT ─────────────────────────────────────────────────────────────────────
+if (!checkHashToken()) init();
 </script>
 </body>
 </html>
