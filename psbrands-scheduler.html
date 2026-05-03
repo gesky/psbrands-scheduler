@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OJO Scheduler</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #F7F6F2;
+    --surface: #FFFFFF;
+    --surface2: #F0EFE9;
+    --border: rgba(0,0,0,0.08);
+    --border-mid: rgba(0,0,0,0.14);
+    --text: #1A1A18;
+    --text-muted: #7A7A74;
+    --text-hint: #AEADA6;
+    --med: #0F6E56;
+    --med-light: #E8F4F0;
+    --med-mid: #1D9E75;
+    --ste: #185FA5;
+    --ste-light: #E6F1FB;
+    --ste-mid: #378ADD;
+    --reel: #854F0B;
+    --reel-light: #FAEEDA;
+    --danger: #E24B4A;
+    --radius: 12px;
+    --radius-sm: 7px;
+  }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 14px;
+  }
+
+  /* LAYOUT */
+  .app { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem 4rem; }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  /* HEADER */
+  .app-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 2.5rem;
+  }
+  .app-logo { font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; color: var(--text-muted); letter-spacing: 0.04em; }
+  .app-logo span { color: var(--text); }
+
+  /* CLIENT SELECT */
+  .section-label { font-size: 11px; font-weight: 500; color: var(--text-hint); letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 1rem; }
+  .client-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+  .client-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.75rem 1.5rem;
+    cursor: pointer;
+    transition: transform 0.12s, border-color 0.12s, box-shadow 0.12s;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 1rem;
+  }
+  .client-card:hover { transform: translateY(-2px); border-color: var(--border-mid); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+  .client-card:active { transform: translateY(0); }
+
+  .client-avatar {
+    width: 48px; height: 48px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace; font-size: 13px; font-weight: 500; letter-spacing: 0.02em;
+  }
+  .av-med { background: var(--med-light); color: var(--med); }
+  .av-ste { background: var(--ste-light); color: var(--ste); }
+
+  .client-info { }
+  .client-name { font-size: 15px; font-weight: 500; margin-bottom: 3px; }
+  .client-channels { font-size: 12px; color: var(--text-muted); }
+
+  /* UPLOAD SCREEN */
+  .topbar {
+    display: flex; align-items: center; gap: 12px; margin-bottom: 2rem;
+  }
+  .back-btn {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 6px 12px;
+    font-size: 12px; font-family: 'DM Sans', sans-serif;
+    color: var(--text-muted); cursor: pointer; transition: background 0.1s;
+  }
+  .back-btn:hover { background: var(--surface2); }
+  .topbar-client { display: flex; align-items: center; gap: 8px; }
+  .topbar-avatar {
+    width: 30px; height: 30px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace; font-size: 10px; font-weight: 500;
+  }
+  .topbar-name { font-size: 14px; font-weight: 500; }
+
+  /* DROP ZONE */
+  .drop-zone {
+    border: 1.5px dashed var(--border-mid);
+    border-radius: var(--radius);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    margin-bottom: 1.25rem;
+    transition: background 0.15s, border-color 0.15s;
+    background: var(--surface);
+  }
+  .drop-zone:hover, .drop-zone.dragging { background: var(--surface2); border-color: var(--border-mid); }
+  .drop-icon { font-size: 24px; margin-bottom: 8px; color: var(--text-hint); }
+  .drop-label { font-size: 13px; font-weight: 500; color: var(--text-muted); margin-bottom: 4px; }
+  .drop-hint { font-size: 11px; font-family: 'DM Mono', monospace; color: var(--text-hint); }
+
+  /* POSTS */
+  .posts-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 1.25rem; }
+
+  .post-row {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 52px 1fr auto;
+    gap: 12px;
+    align-items: start;
+    animation: fadeIn 0.2s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+  .post-row.error-row { border-color: rgba(226,75,74,0.3); background: #FFF8F8; }
+  .post-row.success-row { border-color: rgba(15,110,86,0.3); background: #F5FBF8; }
+
+  .thumb {
+    width: 52px; height: 52px; border-radius: 8px;
+    background: var(--surface2); flex-shrink: 0;
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .thumb img, .thumb video { width: 100%; height: 100%; object-fit: cover; }
+  .format-badge {
+    position: absolute; bottom: 3px; left: 3px;
+    font-size: 7px; font-weight: 500; padding: 2px 5px;
+    border-radius: 4px; text-transform: uppercase; letter-spacing: 0.05em;
+    font-family: 'DM Mono', monospace;
+  }
+  .badge-feed { background: var(--med-light); color: var(--med); }
+  .badge-story { background: var(--ste-light); color: var(--ste); }
+  .badge-reel { background: var(--reel-light); color: var(--reel); }
+
+  .post-mid { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  .post-filename { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text-hint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  .post-caption {
+    width: 100%; border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 7px 9px;
+    font-size: 12px; font-family: 'DM Sans', sans-serif;
+    color: var(--text); background: var(--surface2);
+    resize: none; min-height: 42px; line-height: 1.5;
+    transition: border-color 0.1s, background 0.1s;
+  }
+  .post-caption:focus { outline: none; border-color: var(--border-mid); background: var(--surface); }
+
+  .no-caption { font-size: 11px; color: var(--text-hint); font-style: italic; padding: 2px 0; }
+
+  .datetime-input {
+    border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 6px 9px; font-size: 11px; font-family: 'DM Mono', monospace;
+    color: var(--text); background: var(--surface2); width: 100%;
+    transition: border-color 0.1s;
+  }
+  .datetime-input:focus { outline: none; border-color: var(--border-mid); background: var(--surface); }
+
+  /* STATUS */
+  .post-status { font-size: 11px; font-weight: 500; padding: 3px 0; }
+  .status-ok { color: var(--med); }
+  .status-err { color: var(--danger); }
+  .status-pending { color: var(--text-hint); }
+
+  /* RIGHT SIDE */
+  .post-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
+  .remove-btn { background: none; border: none; font-size: 14px; color: var(--text-hint); cursor: pointer; line-height: 1; padding: 2px; }
+  .remove-btn:hover { color: var(--danger); }
+
+  /* SWITCHES */
+  .post-channels { display: flex; flex-direction: column; gap: 6px; }
+  .channel-row { display: flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; }
+  .ch-label { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text-muted); min-width: 16px; }
+  .sw-track {
+    width: 30px; height: 16px; border-radius: 8px;
+    background: var(--surface2); border: 1px solid var(--border-mid);
+    position: relative; transition: background 0.15s, border-color 0.15s; cursor: pointer; flex-shrink: 0;
+  }
+  .sw-thumb {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--text-hint);
+    position: absolute; top: 1px; left: 1px;
+    transition: transform 0.15s, background 0.15s;
+  }
+  .sw-track.on-green { background: var(--med); border-color: var(--med); }
+  .sw-track.on-green .sw-thumb { transform: translateX(14px); background: #fff; }
+  .sw-track.on-blue { background: var(--ste); border-color: var(--ste); }
+  .sw-track.on-blue .sw-thumb { transform: translateX(14px); background: #fff; }
+  .ch-disabled { opacity: 0.3; pointer-events: none; }
+
+  /* FOOTER */
+  .footer {
+    position: sticky; bottom: 0;
+    background: var(--bg);
+    padding: 1rem 0 0;
+    border-top: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .footer-info { font-size: 12px; color: var(--text-muted); }
+  .footer-info strong { color: var(--text); font-weight: 500; }
+
+  .btn-schedule {
+    border: none; border-radius: var(--radius-sm);
+    padding: 10px 22px; font-size: 13px; font-weight: 500;
+    font-family: 'DM Sans', sans-serif;
+    cursor: pointer; transition: opacity 0.15s, transform 0.1s;
+    color: #fff;
+  }
+  .btn-schedule:hover { opacity: 0.88; }
+  .btn-schedule:active { transform: scale(0.97); }
+  .btn-schedule:disabled { opacity: 0.4; cursor: not-allowed; }
+  .btn-med { background: var(--med); }
+  .btn-ste { background: var(--ste); }
+
+  /* LOADING SPINNER */
+  .spinner {
+    display: inline-block; width: 12px; height: 12px;
+    border: 2px solid rgba(255,255,255,0.4);
+    border-top-color: #fff; border-radius: 50%;
+    animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* TOAST */
+  .toast {
+    position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
+    background: var(--text); color: #fff; border-radius: var(--radius-sm);
+    padding: 10px 18px; font-size: 13px; font-weight: 500;
+    opacity: 0; transition: opacity 0.2s; pointer-events: none; white-space: nowrap;
+    z-index: 999;
+  }
+  .toast.show { opacity: 1; }
+  .toast.toast-ok { background: var(--med); }
+  .toast.toast-err { background: var(--danger); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- HEADER -->
+  <div class="app-header">
+    <div class="app-logo"><span>OJO</span> scheduler</div>
+  </div>
+
+  <!-- SCREEN: CLIENT SELECT -->
+  <div class="screen active" id="screen-clients">
+    <div class="section-label">Selecionar cliente</div>
+    <div class="client-grid">
+      <div class="client-card" onclick="selectClient('med')">
+        <div class="client-avatar av-med">MC</div>
+        <div class="client-info">
+          <div class="client-name">MedControl</div>
+          <div class="client-channels">Instagram · Facebook</div>
+        </div>
+      </div>
+      <div class="client-card" onclick="selectClient('ste')">
+        <div class="client-avatar av-ste">SL</div>
+        <div class="client-info">
+          <div class="client-name">SteriLow</div>
+          <div class="client-channels">Instagram · Facebook</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN: UPLOAD -->
+  <div class="screen" id="screen-upload">
+    <div class="topbar">
+      <button class="back-btn" onclick="goBack()">← voltar</button>
+      <div class="topbar-client">
+        <div class="topbar-avatar" id="topbar-avatar"></div>
+        <span class="topbar-name" id="topbar-name"></span>
+      </div>
+    </div>
+
+    <div class="drop-zone" id="drop-zone" onclick="document.getElementById('file-input').click()">
+      <div class="drop-icon">↑</div>
+      <div class="drop-label">Clique ou arraste os arquivos aqui</div>
+      <div class="drop-hint">feed-0505-10h00.jpg · story-0505-14h30.jpg · reel-1205-09h00.mp4</div>
+    </div>
+    <input type="file" id="file-input" multiple accept="image/*,video/*" style="display:none" onchange="handleFiles(this.files)">
+
+    <div class="posts-list" id="posts-list"></div>
+
+    <div class="footer" id="footer" style="display:none">
+      <div class="footer-info" id="footer-info"></div>
+      <button class="btn-schedule" id="btn-schedule" onclick="scheduleAll()">Agendar tudo</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─── CONFIG ───────────────────────────────────────────────────────────────────
+const CLIENTS = {
+  med: {
+    name: 'MedControl',
+    avatarClass: 'av-med',
+    label: 'MC',
+    btnClass: 'btn-med',
+    fbPageId: '652008431534413',
+    igAccountId: '17841416809261013',
+    pageToken: 'EAAfXOCfPw7wBRdClL5TIOXb2rrrIRfM8ojcTKFVkrANem2l67v1QZCQ1MSKJcSFH3n90ZBabpILPU8VJI1KyfSdqB5LtTn5JlmHuNOI8WYCa9bjiZCaZBl1VvrNiFtvJSG9F95DhXZCKjNfZCqAS1gbf6XtiiGMGDQddRtj143LUZCN9LyP62pZCKLrtZApTBZCrYROBFDGJInQiNORmip0HJ9jwNwgtw7i7IKGrN5DqHjYV45tdiZAD7Nx'
+  },
+  ste: {
+    name: 'SteriLow',
+    avatarClass: 'av-ste',
+    label: 'SL',
+    btnClass: 'btn-ste',
+    fbPageId: '702263192965967',
+    igAccountId: '17841475403160002',
+    pageToken: 'EAAfXOCfPw7wBRT9C4TzlDuKBE6eWKF0LZASBr9dig3l5n4Gud3ejXeUWA2zfDJHM6DN3of2s14tBptvfmzmoLkEJKeLDxOa3m9xlJVqurUCk8x9znRikR4wtLh2k4ICHaL7Sh77eOwzMZB8UYKokRCjzJ7O8zdHKuZB7Qg8QUNdvpayc5iMGpqu5ReFOapmCBvNrlx6wDVM5ZBRxrLABzbCG1o6NAIl4U6lZAaaktNCL7SQtfSLGw'
+  }
+};
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let currentClient = null;
+let posts = [];
+let isScheduling = false;
+
+// ─── NAVIGATION ───────────────────────────────────────────────────────────────
+function selectClient(id) {
+  currentClient = id;
+  const c = CLIENTS[id];
+  const av = document.getElementById('topbar-avatar');
+  av.textContent = c.label;
+  av.className = 'topbar-avatar ' + c.avatarClass;
+  document.getElementById('topbar-name').textContent = c.name;
+  const btn = document.getElementById('btn-schedule');
+  btn.className = 'btn-schedule ' + c.btnClass;
+  posts = [];
+  document.getElementById('posts-list').innerHTML = '';
+  document.getElementById('footer').style.display = 'none';
+  document.getElementById('file-input').value = '';
+  document.getElementById('screen-clients').classList.remove('active');
+  document.getElementById('screen-upload').classList.add('active');
+}
+
+function goBack() {
+  document.getElementById('screen-upload').classList.remove('active');
+  document.getElementById('screen-clients').classList.add('active');
+}
+
+// ─── FILE PARSING ─────────────────────────────────────────────────────────────
+function parseFilename(name) {
+  const base = name.replace(/\.[^.]+$/, '').toLowerCase();
+  const parts = base.split('-');
+  let format = 'feed', dateVal = '', timeVal = '';
+  if (['feed','story','reel'].includes(parts[0])) format = parts[0];
+  if (parts[1] && /^\d{4}$/.test(parts[1])) {
+    const d = parts[1];
+    const day = d.slice(0,2), mon = d.slice(2);
+    const year = new Date().getFullYear();
+    dateVal = `${year}-${mon}-${day}`;
+  }
+  if (parts[2] && /^\d+h\d*$/.test(parts[2])) {
+    const m = parts[2].match(/^(\d+)h(\d*)$/);
+    if (m) timeVal = `${m[1].padStart(2,'0')}:${(m[2]||'00').padStart(2,'0')}`;
+  }
+  return { format, dateVal, timeVal };
+}
+
+// ─── FILE HANDLING ────────────────────────────────────────────────────────────
+function handleFiles(fileList) {
+  Array.from(fileList).forEach(file => {
+    const parsed = parseFilename(file.name);
+    const id = 'p' + Date.now() + Math.floor(Math.random()*1000);
+    const isVideo = file.type.startsWith('video');
+    const url = URL.createObjectURL(file);
+    const defaultCh = parsed.format === 'feed'
+      ? { ig: true, fb: true }
+      : { ig: true, fb: true };
+    posts.push({ id, file, url, isVideo, parsed, channels: defaultCh, status: null, statusMsg: '' });
+    renderPost(posts[posts.length-1]);
+  });
+  updateFooter();
+}
+
+// ─── RENDER POST ROW ──────────────────────────────────────────────────────────
+function renderPost(p) {
+  const list = document.getElementById('posts-list');
+  const div = document.createElement('div');
+  div.className = 'post-row';
+  div.id = 'row-' + p.id;
+
+  const badgeClass = { feed:'badge-feed', story:'badge-story', reel:'badge-reel' }[p.parsed.format];
+  const isStory = p.parsed.format === 'story';
+  const datetime = p.parsed.dateVal && p.parsed.timeVal ? `${p.parsed.dateVal}T${p.parsed.timeVal}` : '';
+
+  div.innerHTML = `
+    <div class="thumb">
+      ${p.isVideo
+        ? `<video src="${p.url}" muted></video>`
+        : `<img src="${p.url}" alt="">`}
+      <span class="format-badge ${badgeClass}">${p.parsed.format}</span>
+    </div>
+    <div class="post-mid">
+      <span class="post-filename">${p.file.name}</span>
+      ${isStory
+        ? `<span class="no-caption">sem legenda</span>`
+        : `<textarea class="post-caption" id="cap-${p.id}" placeholder="Legenda do post..." rows="2"></textarea>`}
+      <input class="datetime-input" type="datetime-local" id="dt-${p.id}" value="${datetime}">
+      <div class="post-status status-pending" id="status-${p.id}"></div>
+    </div>
+    <div class="post-right">
+      <button class="remove-btn" onclick="removePost('${p.id}')" title="Remover">✕</button>
+      <div class="post-channels">
+        <div class="channel-row" onclick="toggleChannel('${p.id}','ig')">
+          <div class="sw-track on-green" id="sw-${p.id}-ig"><div class="sw-thumb"></div></div>
+          <span class="ch-label">IG</span>
+        </div>
+        <div class="channel-row" onclick="toggleChannel('${p.id}','fb')">
+          <div class="sw-track on-green" id="sw-${p.id}-fb"><div class="sw-thumb"></div></div>
+          <span class="ch-label">FB</span>
+        </div>
+      </div>
+    </div>
+  `;
+  list.appendChild(div);
+}
+
+function toggleChannel(id, ch) {
+  const track = document.getElementById(`sw-${id}-${ch}`);
+  const isOn = track.classList.contains('on-green') || track.classList.contains('on-blue');
+  track.classList.remove('on-green','on-blue');
+  if (!isOn) track.classList.add(ch === 'li' ? 'on-blue' : 'on-green');
+  const p = posts.find(x => x.id === id);
+  if (p) p.channels[ch] = !isOn;
+}
+
+function removePost(id) {
+  posts = posts.filter(p => p.id !== id);
+  document.getElementById('row-'+id)?.remove();
+  updateFooter();
+}
+
+function updateFooter() {
+  const footer = document.getElementById('footer');
+  const info = document.getElementById('footer-info');
+  if (!posts.length) { footer.style.display = 'none'; return; }
+  footer.style.display = 'flex';
+  info.innerHTML = `<strong>${posts.length}</strong> ${posts.length === 1 ? 'post' : 'posts'} prontos para agendar`;
+}
+
+// ─── UPLOAD TO META ───────────────────────────────────────────────────────────
+async function uploadMediaToMeta(token, containerId, maxWait = 30000) {
+  const start = Date.now();
+  while (Date.now() - start < maxWait) {
+    await sleep(3000);
+    const r = await fetch(`https://graph.facebook.com/v19.0/${containerId}?fields=status_code&access_token=${token}`);
+    const d = await r.json();
+    if (d.status_code === 'FINISHED') return true;
+    if (d.status_code === 'ERROR') return false;
+  }
+  return false;
+}
+
+function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+async function fileToBase64(file) {
+  return new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = () => res(reader.result);
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
+  });
+}
+
+async function publishInstagram(p, client) {
+  const token = client.pageToken;
+  const igId = client.igAccountId;
+  const caption = p.parsed.format === 'story' ? '' : (document.getElementById('cap-'+p.id)?.value || '');
+  const dtInput = document.getElementById('dt-'+p.id)?.value;
+  const scheduledTime = dtInput ? Math.floor(new Date(dtInput).getTime() / 1000) : null;
+  const isVideo = p.isVideo;
+  const isStory = p.parsed.format === 'story';
+  const isReel = p.parsed.format === 'reel';
+
+  // Build container params
+  const params = new URLSearchParams();
+  params.append('access_token', token);
+
+  if (isVideo || isReel) {
+    params.append('media_type', isReel ? 'REELS' : (isStory ? 'STORIES' : 'VIDEO'));
+    // For video we need a public URL — not supported from local file directly
+    // This will require hosting the video first; flag to user
+    throw new Error('Vídeos precisam de URL pública. Suba o vídeo primeiro para um servidor.');
+  } else {
+    // Image
+    if (isStory) params.append('media_type', 'STORIES');
+    // Convert to base64 data URL — IG API needs a URL, not base64
+    // We'll use the object URL which won't work from local — need to inform user
+    throw new Error('Para publicar imagens, a ferramenta precisa estar hospedada em servidor (GitHub Pages). Use o arquivo HTML hospedado.');
+  }
+}
+
+async function publishFacebook(p, client) {
+  const token = client.pageToken;
+  const pageId = client.fbPageId;
+  const caption = p.parsed.format === 'story' ? '' : (document.getElementById('cap-'+p.id)?.value || '');
+  const dtInput = document.getElementById('dt-'+p.id)?.value;
+
+  if (!dtInput) throw new Error('Data/hora obrigatória para agendamento no Facebook.');
+
+  const scheduledTime = Math.floor(new Date(dtInput).getTime() / 1000);
+  const now = Math.floor(Date.now() / 1000);
+  if (scheduledTime <= now + 600) throw new Error('Agende com pelo menos 10 minutos de antecedência.');
+
+  // Facebook photo post
+  const formData = new FormData();
+  formData.append('access_token', token);
+  formData.append('message', caption);
+  formData.append('published', 'false');
+  formData.append('scheduled_publish_time', scheduledTime);
+
+  if (!p.isVideo) {
+    formData.append('source', p.file);
+    const r = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photos`, {
+      method: 'POST', body: formData
+    });
+    const d = await r.json();
+    if (d.error) throw new Error(d.error.message);
+    return d;
+  } else {
+    throw new Error('Upload de vídeo para Facebook requer URL pública.');
+  }
+}
+
+// ─── SCHEDULE ALL ─────────────────────────────────────────────────────────────
+async function scheduleAll() {
+  if (isScheduling) return;
+  isScheduling = true;
+  const btn = document.getElementById('btn-schedule');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Agendando...';
+
+  const client = CLIENTS[currentClient];
+  let ok = 0, fail = 0;
+
+  for (const p of posts) {
+    const statusEl = document.getElementById('status-'+p.id);
+    const rowEl = document.getElementById('row-'+p.id);
+    statusEl.textContent = 'aguardando...';
+    statusEl.className = 'post-status status-pending';
+
+    const errors = [];
+
+    if (p.channels.fb) {
+      try {
+        await publishFacebook(p, client);
+        errors.push(null);
+      } catch(e) {
+        errors.push('FB: ' + e.message);
+      }
+    }
+
+    if (p.channels.ig) {
+      errors.push('IG: hospede a ferramenta no GitHub Pages para publicar no Instagram.');
+    }
+
+    const realErrors = errors.filter(Boolean);
+    const fbOk = p.channels.fb && !errors[0];
+
+    if (realErrors.length === 0 || fbOk) {
+      ok++;
+      statusEl.textContent = fbOk ? '✓ Agendado no Facebook' : '✓ OK';
+      statusEl.className = 'post-status status-ok';
+      rowEl.classList.add('success-row');
+    } else {
+      fail++;
+      statusEl.textContent = realErrors[0];
+      statusEl.className = 'post-status status-err';
+      rowEl.classList.add('error-row');
+    }
+  }
+
+  btn.disabled = false;
+  btn.innerHTML = 'Agendar tudo';
+  isScheduling = false;
+
+  showToast(
+    fail === 0 ? `${ok} post${ok>1?'s':''} agendado${ok>1?'s':''}!` : `${ok} ok · ${fail} com erro`,
+    fail === 0 ? 'ok' : 'err'
+  );
+}
+
+// ─── TOAST ────────────────────────────────────────────────────────────────────
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast toast-${type} show`;
+  setTimeout(() => t.classList.remove('show'), 3500);
+}
+
+// ─── DRAG & DROP ──────────────────────────────────────────────────────────────
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragging'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragging'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('dragging');
+  handleFiles(e.dataTransfer.files);
+});
+</script>
+</body>
+</html>
