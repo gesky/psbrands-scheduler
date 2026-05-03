@@ -501,7 +501,7 @@ async function uploadImageTemp(file) {
   const fd = new FormData();
   fd.append('file', file);
   fd.append('upload_preset', 'kffejtqu');
-  const res = await fetch('https://api.cloudinary.com/v1_1/kffejtqu/image/upload', { method: 'POST', body: fd });
+  const res = await fetch('https://api.cloudinary.com/v1_1/dwrqirwps/image/upload', { method: 'POST', body: fd });
   const json = await res.json();
   if (json.error) throw new Error('Falha ao hospedar imagem: ' + json.error.message);
   return json.secure_url;
