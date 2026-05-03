@@ -498,22 +498,13 @@ function updateFooter() {
 function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 async function uploadImageTemp(file) {
-  // Upload to freeimage.host (no API key needed)
-  const base64 = await new Promise((res, rej) => {
-    const reader = new FileReader();
-    reader.onload = () => res(reader.result.split(',')[1]);
-    reader.onerror = rej;
-    reader.readAsDataURL(file);
-  });
   const fd = new FormData();
-  fd.append('key', '6d207e392fd1943-2523-4522-8b08-6c9cc8ffd3fd'); // freeimage.host public key
-  fd.append('action', 'upload');
-  fd.append('source', base64);
-  fd.append('format', 'json');
-  const res = await fetch('https://freeimage.host/api/1/upload', { method: 'POST', body: fd });
+  fd.append('file', file);
+  fd.append('upload_preset', 'kffejtqu');
+  const res = await fetch('https://api.cloudinary.com/v1_1/kffejtqu/image/upload', { method: 'POST', body: fd });
   const json = await res.json();
-  if (json.status_code !== 200) throw new Error('Falha ao hospedar imagem.');
-  return json.image.url;
+  if (json.error) throw new Error('Falha ao hospedar imagem: ' + json.error.message);
+  return json.secure_url;
 }
 
 async function waitForContainer(token, containerId, maxWait = 40000) {
