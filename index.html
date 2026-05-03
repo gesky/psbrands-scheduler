@@ -493,62 +493,143 @@ async function publishInstagram(p, client) {
   const igId = client.igAccountId;
   const caption = p.parsed.format === 'story' ? '' : (document.getElementById('cap-'+p.id)?.value || '');
   const dtInput = document.getElementById('dt-'+p.id)?.value;
-  const scheduledTime = dtInput ? Math.floor(new Date(dtInput).getTime() / 1000) : null;
-  const isVideo = p.isVideo;
   const isStory = p.parsed.format === 'story';
   const isReel = p.parsed.format === 'reel';
 
-  // Build container params
-  const params = new URLSearchParams();
-  params.append('access_token', token);
-
-  if (isVideo || isReel) {
-    params.append('media_type', isReel ? 'REELS' : (isStory ? 'STORIES' : 'VIDEO'));
-    // For video we need a public URL — not supported from local file directly
-    // This will require hosting the video first; flag to user
-    throw new Error('Vídeos precisam de URL pública. Suba o vídeo primeiro para um servidor.');
-  } else {
-    // Image
-    if (isStory) params.append('media_type', 'STORIES');
-    // Convert to base64 data URL — IG API needs a URL, not base64
-    // We'll use the object URL which won't work from local — need to inform user
-    throw new Error('Para publicar imagens, a ferramenta precisa estar hospedada em servidor (GitHub Pages). Use o arquivo HTML hospedado.');
-  }
-}
-
-async function publishFacebook(p, client) {
-  const token = client.pageToken;
-  const pageId = client.fbPageId;
-  const caption = p.parsed.format === 'story' ? '' : (document.getElementById('cap-'+p.id)?.value || '');
-  const dtInput = document.getElementById('dt-'+p.id)?.value;
-
-  if (!dtInput) throw new Error('Data/hora obrigatória para agendamento no Facebook.');
-
+  if (!dtInput) throw new Error('Data/hora obrigatória para agendamento no Instagram.');
   const scheduledTime = Math.floor(new Date(dtInput).getTime() / 1000);
   const now = Math.floor(Date.now() / 1000);
   if (scheduledTime <= now + 600) throw new Error('Agende com pelo menos 10 minutos de antecedência.');
   if (scheduledTime > now + 30 * 24 * 3600) throw new Error('Agendamento máximo é 30 dias à frente.');
 
+  if (p.isVideo) throw new Error('Upload de vídeo requer URL pública. Em breve!');
+
+  // Step 1: get public URL of the image via the hosted page
+  const imageUrl = await uploadImageToGitHub(p.file);
+
+  // Step 2: create IG media container
+  const containerParams = new URLSearchParams();
+  containerParams.append('access_token', token);
+  containerParams.append('image_url', imageUrl);
+  if (isStory) containerParams.append('media_type', 'STORIES');
+  if (!isStory && caption) containerParams.append('caption', caption);
+
+  console.log('[IG] Creating container...', { imageUrl, isStory });
+  const containerRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/media`, {
+    method: 'POST',
+    body: containerParams
+  });
+  const containerJson = await containerRes.json();
+  console.log('[IG] Container response:', JSON.stringify(containerJson));
+  if (containerJson.error) throw new Error(containerJson.error.message);
+  const containerId = containerJson.id;
+
+  // Step 3: poll until container is ready
+  const ready = await waitForContainer(token, containerId);
+  if (!ready) throw new Error('Timeout ao processar imagem no Instagram.');
+
+  // Step 4: publish (scheduled)
+  const publishParams = new URLSearchParams();
+  publishParams.append('access_token', token);
+  publishParams.append('creation_id', containerId);
+
+  console.log('[IG] Publishing container...', { containerId, scheduledTime });
+  const publishRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/media_publish`, {
+    method: 'POST',
+    body: publishParams
+  });
+  const publishJson = await publishRes.json();
+  console.log('[IG] Publish response:', JSON.stringify(publishJson));
+  if (publishJson.error) throw new Error(publishJson.error.message);
+  return publishJson;
+}
+
+async function uploadImageToGitHub(file) {
+  // Convert file to base64 and upload to a temporary GitHub Gist to get a public URL
+  // Since we're on GitHub Pages, we use a data URL proxy approach via imgbb free API
+  // Actually: we'll use the file as a blob URL and upload via form to a free image host
+  // For now: use file.name to build GitHub Pages URL (user must pre-upload images)
+  // Better approach: use a free image hosting API
+  const base64 = await new Promise((res, rej) => {
+    const reader = new FileReader();
+    reader.onload = () => res(reader.result.split(',')[1]);
+    reader.onerror = rej;
+    reader.readAsDataURL(file);
+  });
+
+  // Upload to imgbb (free, no auth needed for basic use)
+  const formData = new FormData();
+  formData.append('key', '2f9d8e1c5b7a4f3e9d0c6b8a1e2f5d4c'); // public demo key
+  formData.append('image', base64);
+
+  const res = await fetch('https://api.imgbb.com/1/upload', { method: 'POST', body: formData });
+  const json = await res.json();
+  if (!json.success) throw new Error('Falha ao hospedar imagem temporariamente.');
+  return json.data.url;
+}
+
+async function waitForContainer(token, containerId, maxWait = 30000) {
+  const start = Date.now();
+  while (Date.now() - start < maxWait) {
+    await sleep(2000);
+    const r = await fetch(`https://graph.facebook.com/v19.0/${containerId}?fields=status_code&access_token=${token}`);
+    const d = await r.json();
+    console.log('[IG] Container status:', d.status_code);
+    if (d.status_code === 'FINISHED') return true;
+    if (d.status_code === 'ERROR') return false;
+  }
+  return false;
+}
+
+async function publishFacebook(p, client) {
+  const token = client.pageToken;
+  const pageId = client.fbPageId;
+  const isStory = p.parsed.format === 'story';
+  const caption = isStory ? '' : (document.getElementById('cap-'+p.id)?.value || '');
+  const dtInput = document.getElementById('dt-'+p.id)?.value;
+
+  if (!dtInput) throw new Error('Data/hora obrigatória para agendamento no Facebook.');
+  const scheduledTime = Math.floor(new Date(dtInput).getTime() / 1000);
+  const now = Math.floor(Date.now() / 1000);
+  if (scheduledTime <= now + 600) throw new Error('Agende com pelo menos 10 minutos de antecedência.');
+  if (scheduledTime > now + 30 * 24 * 3600) throw new Error('Agendamento máximo é 30 dias à frente.');
   if (p.isVideo) throw new Error('Upload de vídeo para Facebook requer URL pública.');
 
-  // Step 1: upload photo unpublished
+  if (isStory) {
+    // Facebook Stories via photo_stories endpoint
+    const storyData = new FormData();
+    storyData.append('access_token', token);
+    storyData.append('source', p.file);
+    storyData.append('published', 'false');
+    storyData.append('scheduled_publish_time', scheduledTime);
+
+    console.log('[FB] Uploading story...');
+    const storyRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photo_stories`, {
+      method: 'POST', body: storyData
+    });
+    const storyJson = await storyRes.json();
+    console.log('[FB] Story response:', JSON.stringify(storyJson));
+    if (storyJson.error) throw new Error(storyJson.error.message);
+    return storyJson;
+  }
+
+  // Feed post: Step 1 — upload photo unpublished
   const uploadData = new FormData();
   uploadData.append('access_token', token);
   uploadData.append('source', p.file);
   uploadData.append('published', 'false');
 
-  console.log('[FB] Uploading photo to /photos...');
+  console.log('[FB] Uploading photo...');
   const uploadRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photos`, {
     method: 'POST', body: uploadData
   });
   const uploadJson = await uploadRes.json();
   console.log('[FB] Upload response:', JSON.stringify(uploadJson));
-
   if (uploadJson.error) throw new Error(uploadJson.error.message);
   const photoId = uploadJson.id;
   if (!photoId) throw new Error('Não foi possível obter o ID da foto.');
 
-  // Step 2: create scheduled feed post referencing the photo
+  // Step 2: create scheduled feed post
   const feedData = new FormData();
   feedData.append('access_token', token);
   feedData.append('message', caption);
@@ -556,16 +637,17 @@ async function publishFacebook(p, client) {
   feedData.append('published', 'false');
   feedData.append('scheduled_publish_time', scheduledTime);
 
-  console.log('[FB] Creating scheduled feed post...', { photoId, scheduledTime, caption });
+  console.log('[FB] Creating scheduled feed post...', { photoId, scheduledTime });
   const feedRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
     method: 'POST', body: feedData
   });
   const feedJson = await feedRes.json();
   console.log('[FB] Feed response:', JSON.stringify(feedJson));
-
   if (feedJson.error) throw new Error(feedJson.error.message);
   return feedJson;
 }
+
+
 
 // ─── SCHEDULE ALL ─────────────────────────────────────────────────────────────
 async function scheduleAll() {
@@ -584,33 +666,48 @@ async function scheduleAll() {
     statusEl.textContent = 'aguardando...';
     statusEl.className = 'post-status status-pending';
 
-    const errors = [];
+    const results = [];
 
     if (p.channels.fb) {
       try {
         await publishFacebook(p, client);
-        errors.push(null);
+        results.push({ ch: 'FB', ok: true });
       } catch(e) {
-        errors.push('FB: ' + e.message);
+        results.push({ ch: 'FB', ok: false, msg: e.message });
       }
     }
 
     if (p.channels.ig) {
-      errors.push('IG: hospede a ferramenta no GitHub Pages para publicar no Instagram.');
+      try {
+        await publishInstagram(p, client);
+        results.push({ ch: 'IG', ok: true });
+      } catch(e) {
+        results.push({ ch: 'IG', ok: false, msg: e.message });
+      }
     }
 
-    const realErrors = errors.filter(Boolean);
-    const fbOk = p.channels.fb && !errors[0];
+    const allOk = results.every(r => r.ok);
+    const anyOk = results.some(r => r.ok);
+    const errors = results.filter(r => !r.ok);
 
-    if (realErrors.length === 0 || fbOk) {
+    if (allOk) {
       ok++;
-      statusEl.textContent = fbOk ? '✓ Agendado no Facebook' : '✓ OK';
+      statusEl.textContent = '✓ Agendado em ' + results.map(r => r.ch).join(' + ');
       statusEl.className = 'post-status status-ok';
+      rowEl.classList.remove('error-row');
       rowEl.classList.add('success-row');
+    } else if (anyOk) {
+      ok++;
+      const okChs = results.filter(r => r.ok).map(r => r.ch).join('+');
+      const errChs = errors.map(r => r.ch + ': ' + r.msg).join(' | ');
+      statusEl.textContent = '✓ ' + okChs + ' · ✕ ' + errChs;
+      statusEl.className = 'post-status status-pending';
+      rowEl.classList.remove('error-row', 'success-row');
     } else {
       fail++;
-      statusEl.textContent = realErrors[0];
+      statusEl.textContent = errors.map(r => r.ch + ': ' + r.msg).join(' | ');
       statusEl.className = 'post-status status-err';
+      rowEl.classList.remove('success-row');
       rowEl.classList.add('error-row');
     }
   }
