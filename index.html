@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>OJO Scheduler</title>
+<title>Scheduler</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400;500&display=swap');
 
@@ -259,7 +259,7 @@
 
   <!-- HEADER -->
   <div class="app-header">
-    <div class="app-logo"><span>OJO</span> scheduler</div>
+    <div class="app-logo"><span>Scheduler</span></div>
   </div>
 
   <!-- SCREEN: CLIENT SELECT -->
@@ -527,25 +527,44 @@ async function publishFacebook(p, client) {
   const scheduledTime = Math.floor(new Date(dtInput).getTime() / 1000);
   const now = Math.floor(Date.now() / 1000);
   if (scheduledTime <= now + 600) throw new Error('Agende com pelo menos 10 minutos de antecedência.');
+  if (scheduledTime > now + 30 * 24 * 3600) throw new Error('Agendamento máximo é 30 dias à frente.');
 
-  // Facebook photo post
-  const formData = new FormData();
-  formData.append('access_token', token);
-  formData.append('message', caption);
-  formData.append('published', 'false');
-  formData.append('scheduled_publish_time', scheduledTime);
+  if (p.isVideo) throw new Error('Upload de vídeo para Facebook requer URL pública.');
 
-  if (!p.isVideo) {
-    formData.append('source', p.file);
-    const r = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photos`, {
-      method: 'POST', body: formData
-    });
-    const d = await r.json();
-    if (d.error) throw new Error(d.error.message);
-    return d;
-  } else {
-    throw new Error('Upload de vídeo para Facebook requer URL pública.');
-  }
+  // Step 1: upload photo unpublished
+  const uploadData = new FormData();
+  uploadData.append('access_token', token);
+  uploadData.append('source', p.file);
+  uploadData.append('published', 'false');
+
+  console.log('[FB] Uploading photo to /photos...');
+  const uploadRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photos`, {
+    method: 'POST', body: uploadData
+  });
+  const uploadJson = await uploadRes.json();
+  console.log('[FB] Upload response:', JSON.stringify(uploadJson));
+
+  if (uploadJson.error) throw new Error(uploadJson.error.message);
+  const photoId = uploadJson.id;
+  if (!photoId) throw new Error('Não foi possível obter o ID da foto.');
+
+  // Step 2: create scheduled feed post referencing the photo
+  const feedData = new FormData();
+  feedData.append('access_token', token);
+  feedData.append('message', caption);
+  feedData.append('attached_media[0]', JSON.stringify({ media_fbid: photoId }));
+  feedData.append('published', 'false');
+  feedData.append('scheduled_publish_time', scheduledTime);
+
+  console.log('[FB] Creating scheduled feed post...', { photoId, scheduledTime, caption });
+  const feedRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/feed`, {
+    method: 'POST', body: feedData
+  });
+  const feedJson = await feedRes.json();
+  console.log('[FB] Feed response:', JSON.stringify(feedJson));
+
+  if (feedJson.error) throw new Error(feedJson.error.message);
+  return feedJson;
 }
 
 // ─── SCHEDULE ALL ─────────────────────────────────────────────────────────────
