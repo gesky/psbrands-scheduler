@@ -539,19 +539,24 @@ async function publishInstagram(p, client) {
 
   if (p.isVideo) throw new Error('Vídeo requer URL pública. Em breve!');
 
+  // Instagram Content Publishing API does not support scheduling future posts directly.
+  // We use scheduled_publish_time only for Creator-approved accounts.
+  // For regular Business accounts, we publish immediately OR use scheduled_publish_time
+  // which requires publish_to_business_discovery permission.
+  // Best approach: use scheduled_publish_time param and let API decide.
   const scheduledTime = getScheduledTime(p);
   const imageUrl = await uploadImageTemp(p.file);
 
   // Create container
-  const containerParams = new URLSearchParams();
-  containerParams.append('access_token', token);
-  containerParams.append('image_url', imageUrl);
-  if (isStory) containerParams.append('media_type', 'STORIES');
-  else if (isReel) containerParams.append('media_type', 'REELS');
-  if (!isStory && caption) containerParams.append('caption', caption);
+  const containerFd = new FormData();
+  containerFd.append('access_token', token);
+  containerFd.append('image_url', imageUrl);
+  if (isStory) containerFd.append('media_type', 'STORIES');
+  else if (isReel) containerFd.append('media_type', 'REELS');
+  if (!isStory && caption) containerFd.append('caption', caption);
 
   const containerRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/media`, {
-    method: 'POST', body: containerParams
+    method: 'POST', body: containerFd
   });
   const containerJson = await containerRes.json();
   if (containerJson.error) throw new Error(containerJson.error.message);
@@ -559,13 +564,14 @@ async function publishInstagram(p, client) {
   const ready = await waitForContainer(token, containerJson.id);
   if (!ready) throw new Error('Timeout ao processar imagem.');
 
-  // Publish
-  const publishParams = new URLSearchParams();
-  publishParams.append('access_token', token);
-  publishParams.append('creation_id', containerJson.id);
+  // Publish with scheduled_publish_time
+  const publishFd = new FormData();
+  publishFd.append('access_token', token);
+  publishFd.append('creation_id', containerJson.id);
+  publishFd.append('scheduled_publish_time', scheduledTime);
 
   const publishRes = await fetch(`https://graph.facebook.com/v19.0/${igId}/media_publish`, {
-    method: 'POST', body: publishParams
+    method: 'POST', body: publishFd
   });
   const publishJson = await publishRes.json();
   if (publishJson.error) throw new Error(publishJson.error.message);
@@ -583,9 +589,11 @@ async function publishFacebook(p, client) {
   if (p.isVideo) throw new Error('Vídeo requer URL pública. Em breve!');
 
   if (isStory) {
+    // Stories via Cloudinary URL + /photo_stories with scheduling
+    const imageUrl = await uploadImageTemp(p.file);
     const fd = new FormData();
     fd.append('access_token', token);
-    fd.append('source', p.file);
+    fd.append('url', imageUrl);
     fd.append('published', 'false');
     fd.append('scheduled_publish_time', scheduledTime);
     const res = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photo_stories`, { method: 'POST', body: fd });
@@ -594,18 +602,19 @@ async function publishFacebook(p, client) {
     return json;
   }
 
-  // Feed: step 1 upload photo
+  // Feed: upload photo with no_story=true to prevent auto-post
   const uploadFd = new FormData();
   uploadFd.append('access_token', token);
   uploadFd.append('source', p.file);
   uploadFd.append('published', 'false');
+  uploadFd.append('no_story', 'true');
   const uploadRes = await fetch(`https://graph.facebook.com/v19.0/${pageId}/photos`, { method: 'POST', body: uploadFd });
   const uploadJson = await uploadRes.json();
   if (uploadJson.error) throw new Error(uploadJson.error.message);
   const photoId = uploadJson.id;
   if (!photoId) throw new Error('Não foi possível obter ID da foto.');
 
-  // Step 2: create scheduled feed post
+  // Create scheduled feed post referencing the photo
   const feedFd = new FormData();
   feedFd.append('access_token', token);
   feedFd.append('message', caption);
